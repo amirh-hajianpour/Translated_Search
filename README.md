@@ -4,12 +4,14 @@ Genome annotation using translated DNA and HMMER. Given a FASTA DNA file and a H
 
 ## To run:
 
+```
 python3 Translated_Search.py [-h:help] 
                              <FASTA: DNA file>
                              <hmm: protein_profile file>
                              <MasterFile: TRUE annotation file>
                              <string: gene_name>
                              <output format: i|s|b>
+```
 
 i: indeices, s: sequences, b: both
 
