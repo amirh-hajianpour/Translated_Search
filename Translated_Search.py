@@ -63,13 +63,13 @@ class Translation:
         }
         print()
 
-    # Converts DNA to Protein
-    def dna_to_protein(self, in_dna, title):
-        # Transcription (DNA to RNA)
+    # Translates DNA
+    def translator(self, in_dna, title):
+        # Transcription (T => U)
         print("Transcribing frame number ", title, " ...")
         transcribed_dna = in_dna.replace('T', 'U')
 
-        # Translation (RNA to Protein)
+        # Translation (codon => amino acid)
         start = end = 0 # codon coordinates
         translated_dna = ""
         # the remaining residue(s) is ignored (e.g AAAU => AAA = K)
@@ -297,27 +297,27 @@ class Translation:
         for line in self.dna:
             new_dna += line
 
-        # Creating the protein_file with 6 different sequences (ORFs) with 6 different recognizable titles
+        # Creating the translated_dna_file with 6 different sequences (ORFs) with 6 different recognizable titles
         print("\nForward ORFs:")
         print("-------------")
-        protein_fasta = ""
+        translated_dna = ""
         reverse = 1
         for frame_number in range(3):
-            protein = self.dna_to_protein(new_dna[frame_number::reverse], frame_number)
-            protein_fasta = protein_fasta + ('>' + str(frame_number) + '_' + title.replace('>', '') + '\n'+ self.fasta_format(protein) + '\n')
+            translated_frame = self.translator(new_dna[frame_number::reverse], frame_number)
+            translated_dna = translated_dna + ('>' + str(frame_number) + '_' + title.replace('>', '') + '\n'+ self.fasta_format(translated_frame) + '\n')
         # The reverse 3 ORFs is not yet needed.
         print("\nReverse ORFs:")
         print("-------------")
         reverse = -1
         for frame_number in range(3):
-            protein = self.dna_to_protein(new_dna[reverse*(frame_number+1)::reverse], frame_number)
-            protein_fasta = protein_fasta + ('>' + str(frame_number) + '_' + title.replace('>', '') + '\n'+ self.fasta_format(protein) + '\n')
+            translated_frame = self.translator(new_dna[reverse*(frame_number+1)::reverse], frame_number)
+            translated_dna = translated_dna + ('>' + str(frame_number) + '_' + title.replace('>', '') + '\n'+ self.fasta_format(translated_frame) + '\n')
 
-        # Writing the protein_file to a file for HMMER use
-        protein_file = open("protein.fa", 'w+')
-        protein_file.write(protein_fasta)
-        seq_path = os.path.abspath("protein.fa")
-        protein_file.seek(0, 0)
+        # Writing the translated_dna_file to a file for HMMER use
+        translated_frames_file = open("translated_frames.fa", 'w+')
+        translated_frames_file.write(translated_dna)
+        seq_path = os.path.abspath("translated_frames.fa")
+        translated_frames_file.seek(0, 0)
 
         # "--nobias", "--incE", "10", "--incdomE", "10", "--F3", "10", "--nonull2"
         print("\nRunning HMMER ...")
