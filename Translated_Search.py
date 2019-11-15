@@ -4,96 +4,148 @@ import os
 import re
 
 
-class Translation:
+class Translated_Search:
     dna = ""
-    genetic_code = {}
-    abbreviation = {}
+    genetic_code = {
+        # Phe
+        'UUU': 'Phe', 'UUC': 'Phe',
+        # Leu
+        'UUA': 'Leu', 'UUG': 'Leu', 'CUU': 'Leu', 'CUC': 'Leu', 'CUA': 'Leu', 'CUG': 'Leu',
+        # Ser
+        'UCU': 'Ser', 'UCC': 'Ser', 'UCA': 'Ser', 'UCG': 'Ser', 'AGU': 'Ser', 'AGC': 'Ser',
+        # Tyr
+        'UAU': 'Tyr', 'UAC': 'Tyr',
+        # STOP
+        'UAA': 'STOP', 'UAG': 'STOP', 'UGA': 'STOP',
+        # Cys
+        'UGU': 'Cys', 'UGC': 'Cys',
+        # Trp
+        'UGG': 'Trp',
+        # Pro
+        'CCU': 'Pro', 'CCC': 'Pro', 'CCA': 'Pro', 'CCG': 'Pro',
+        # His
+        'CAU': 'His', 'CAC': 'His',
+        # Gln
+        'CAA': 'Gln', 'CAG': 'Gln',
+        # Arg
+        'CGU': 'Arg', 'CGC': 'Arg', 'CGA': 'Arg', 'CGG': 'Arg', 'AGA': 'Arg', 'AGG': 'Arg',
+        # Ile
+        'AUU': 'Ile', 'AUC': 'Ile', 'AUA': 'Ile',
+        # Met
+        'AUG': 'Met',
+        # Thr
+        'ACU': 'Thr', 'ACC': 'Thr', 'ACA': 'Thr', 'ACG': 'Thr',
+        # Asn
+        'AAU': 'Asn', 'AAC': 'Asn',
+        # Lys
+        'AAA': 'Lys', 'AAG': 'Lys',
+        # Val
+        'GUU': 'Val', 'GUC': 'Val', 'GUA': 'Val', 'GUG': 'Val',
+        # Ala
+        'GCU': 'Ala', 'GCC': 'Ala', 'GCA': 'Ala', 'GCG': 'Ala',
+        # Asp
+        'GAU': 'Asp', 'GAC': 'Asp',
+        # Glu
+        'GAA': 'Glu', 'GAG': 'Glu',
+        # Gly
+        'GGU': 'Gly', 'GGC': 'Gly', 'GGA': 'Gly', 'GGG': 'Gly'
+    }
+    abbreviation = {
+        'Ala': 'A', 'Arg': 'R', 'Asn': 'N', 'Asp': 'D', 'Cys': 'C', 'Glu': 'E', 'Gln': 'Q',
+        'Gly': 'G', 'His': 'H', 'Ile': 'I', 'Leu': 'L', 'Lys': 'K', 'Met': 'M', 'Phe': 'F',
+        'Pro': 'P', 'Ser': 'S', 'Thr': 'T', 'Trp': 'W', 'Tyr': 'Y', 'Val': 'V', 'STOP': '*'
+    }
     hmms_coordinates = []
     hits_coordinates = []
 
     def __init__(self):
-        self.genetic_code = {
-            # Phe
-            'UUU': 'Phe', 'UUC': 'Phe',
-            # Leu
-            'UUA': 'Leu', 'UUG': 'Leu', 'CUU': 'Leu', 'CUC': 'Leu', 'CUA': 'Leu', 'CUG': 'Leu',
-            # Ser
-            'UCU': 'Ser', 'UCC': 'Ser', 'UCA': 'Ser', 'UCG': 'Ser', 'AGU': 'Ser', 'AGC': 'Ser',
-            # Tyr
-            'UAU': 'Tyr', 'UAC': 'Tyr',
-            # STOP
-            'UAA': 'STOP', 'UAG': 'STOP', 'UGA': 'STOP',
-            # Cys
-            'UGU': 'Cys', 'UGC': 'Cys',
-            # Trp
-            'UGG': 'Trp',
-            # Pro
-            'CCU': 'Pro', 'CCC': 'Pro', 'CCA': 'Pro', 'CCG': 'Pro',
-            # His
-            'CAU': 'His', 'CAC': 'His',
-            # Gln
-            'CAA': 'Gln', 'CAG': 'Gln',
-            # Arg
-            'CGU': 'Arg', 'CGC': 'Arg', 'CGA': 'Arg', 'CGG': 'Arg', 'AGA': 'Arg', 'AGG': 'Arg',
-            # Ile
-            'AUU': 'Ile', 'AUC': 'Ile', 'AUA': 'Ile',
-            # Met
-            'AUG': 'Met',
-            # Thr
-            'ACU': 'Thr', 'ACC': 'Thr', 'ACA': 'Thr', 'ACG': 'Thr',
-            # Asn
-            'AAU': 'Asn', 'AAC': 'Asn',
-            # Lys
-            'AAA': 'Lys', 'AAG': 'Lys',
-            # Val
-            'GUU': 'Val', 'GUC': 'Val', 'GUA': 'Val', 'GUG': 'Val',
-            # Ala
-            'GCU': 'Ala', 'GCC': 'Ala', 'GCA': 'Ala', 'GCG': 'Ala',
-            # Asp
-            'GAU': 'Asp', 'GAC': 'Asp',
-            # Glu
-            'GAA': 'Glu', 'GAG': 'Glu',
-            # Gly
-            'GGU': 'Gly', 'GGC': 'Gly', 'GGA': 'Gly', 'GGG': 'Gly'
-        }
-        self.abbreviation = {
-            'Ala': 'A', 'Arg': 'R', 'Asn': 'N', 'Asp': 'D', 'Cys': 'C', 'Glu': 'E', 'Gln': 'Q',
-            'Gly': 'G', 'His': 'H', 'Ile': 'I', 'Leu': 'L', 'Lys': 'K', 'Met': 'M', 'Phe': 'F',
-            'Pro': 'P', 'Ser': 'S', 'Thr': 'T', 'Trp': 'W', 'Tyr': 'Y', 'Val': 'V', 'STOP': 'X'
-        }
         print()
 
-    # Translates DNA
-    def translator(self, in_dna, title):
+    @staticmethod
+    # Makes a complementary DNA strand
+    def complementor(dna):
+        dna = dna.upper()
+
+        # T => A, and A => T
+        dna = dna.replace('A', '1')
+        dna = dna.replace('T', 'A')
+        dna = dna.replace('1', 'T')
+
+        # G => C, and C => G
+        dna = dna.replace('C', '1')
+        dna = dna.replace('G', 'C')
+        dna = dna.replace('1', 'G')
+
+        return dna
+
+    @staticmethod
+    # Transcribes and Translates a DNA string
+    # Ignores remaining residue(s), skips abnormal codons
+    def translator(dna, frame_number = 0, reverse = False, stop_codon = '*'):
+        dna = dna.upper()
+        dna = dna[frame_number:]
+
+        # Changing STOP codon translating symbol
+        Translated_Search.abbreviation.update(STOP = str(stop_codon))
+
         # Transcription (T => U)
-        print("Transcribing frame number ", title, " ...")
-        transcribed_dna = in_dna.replace('T', 'U')
+        transcribed_dna = dna.replace('T', 'U')
 
         # Translation (codon => amino acid)
         start = end = 0 # codon coordinates
         translated_dna = ""
-        # the remaining residue(s) is ignored (e.g AAAU => AAA = K)
+        # The remaining residue(s) is/are ignored (e.g. AAAU => AAA = K)
         while (len(transcribed_dna) - end) / 3 >= 1:
             end = start + 3
             codon = transcribed_dna[start:end]
-            # strange codons are completely ingnored.
-            if str(codon) in self.genetic_code.keys():
-                amino = self.genetic_code[str(codon)]
-                translated_dna += self.abbreviation[amino]
+            # If reverse ORF, codons should be read backward
+            if reverse:
+                codon = codon[::-1]
+            # Abnormal codons are completely skipped. (e.g. AAUPUU => AAU = N)
+            if str(codon) in Translated_Search.genetic_code.keys():
+                amino_acid = Translated_Search.genetic_code[str(codon)]
+                translated_dna += Translated_Search.abbreviation[amino_acid]
             start = end
         return translated_dna
 
-    # Converts files into a format that is compatible with HMMER
-    def fasta_format(self, sequence):
+    @staticmethod
+    # Converts a string to FASTA format
+    def string_to_fasta(sequence, title = "", line_length = 80):
         counter = 1
         fasta = ""
         for char in str(sequence):
-            if (counter % 60) == 0:
+            if (counter % line_length) == 0:
                 fasta += char + '\n'
             else:
                 fasta += char
             counter += 1
+        if title != "":
+            fasta = '>' + title + '\n' + fasta + '\n'
         return fasta
+
+    @staticmethod
+    # Converts a FASTA format to string
+    def fasta_to_string(fasta):
+        lines = fasta.split('\n')
+        current_line_index = 0
+
+        # Ignoring the comments
+        while lines[current_line_index].startswith(';'):
+            current_line_index += 1
+
+        # Getting the title line
+        while not lines[current_line_index].startswith('>'):
+            current_line_index += 1
+        title = lines[current_line_index].replace('>', '')
+
+        # Getting the whole sequence as a one-line string
+        lines = lines[current_line_index+1:len(lines)]
+        sequence = ""
+        for line in lines:
+            sequence += line
+        sequence = sequence.replace('\n', '')
+
+        return title, sequence
 
     # Computes a score for a set of hits considering:
     # overlap as penalty, and match as positive score
@@ -162,19 +214,19 @@ class Translation:
     def mf_exon_reader(self, mf_file, gene, result):
         # Reading the MasfterFile File
         mf = open(mf_file, 'r')
-        line_by_line = mf.read().split('\n')
+        lines = mf.read().split('\n')
 
         # Finding the starting line of the FASTA file (<)
         current_line_index = 0
-        current_line = re.sub(' +', ' ', line_by_line[current_line_index]).split(' ')
+        current_line = re.sub(' +', ' ', lines[current_line_index]).split(' ')
         while not current_line[0].startswith('>'):
             current_line_index = current_line_index + 1
-            current_line = re.sub(' +', ' ', line_by_line[current_line_index]).split(' ')
+            current_line = re.sub(' +', ' ', lines[current_line_index]).split(' ')
 
         # Finding the starting line of the gene
         while current_line[0] != ';' or current_line[1] != ('G-' + gene) or current_line[3] != 'start':
             current_line_index = current_line_index + 1
-            current_line = re.sub(' +', ' ', line_by_line[current_line_index]).split(' ')
+            current_line = re.sub(' +', ' ', lines[current_line_index]).split(' ')
 
         is_exon = False # it's an exon sequence line
         exon_number = -1    # current number of the exon
@@ -195,7 +247,7 @@ class Translation:
                 temp_line = current_line
                 while temp_line[0].startswith(';'):
                     temp_line_index = temp_line_index + 1
-                    temp_line = re.sub(' +', ' ', line_by_line[temp_line_index]).strip().split(' ')
+                    temp_line = re.sub(' +', ' ', lines[temp_line_index]).strip().split(' ')
                 exon_starts[exon_number] = int(temp_line[0])
                 exon_start_line = temp_line_index
             # exon ends
@@ -210,17 +262,17 @@ class Translation:
                 temp_line = current_line
                 while temp_line[0].startswith(';'):
                     temp_line_index = temp_line_index + 1
-                    temp_line = re.sub(' +', ' ', line_by_line[temp_line_index]).strip().split(' ')
+                    temp_line = re.sub(' +', ' ', lines[temp_line_index]).strip().split(' ')
                 exon_ends[exon_number] = int(temp_line[0]) - 1
             current_line_index = current_line_index + 1
-            current_line = re.sub(' +', ' ', line_by_line[current_line_index]).strip().split(' ')
+            current_line = re.sub(' +', ' ', lines[current_line_index]).strip().split(' ')
             # Filling buffer exon
             if is_exon and not current_line[0].startswith(';'):
                 temp_exon[current_line_index - exon_start_line] = temp_exon[current_line_index - exon_start_line] + current_line[1]
         # Printing result
         if result != 's':
             print("\nPositions of \"" + gene + "\" exons in the annotated file:")
-            print("-----------------------------------------------")
+            print("------------------------------------------------")
             print('{0} {1:>6} {2:>5} {3:>8} {4:>4} {5:>8} {6:>9}'.format("Exon", "Start", "End", "Length", "Hit", "Overlap", "Accuracy"))
             print('{0} {1:>6} {2:>6} {3:>7} {4:>4} {5:>8} {6:>9}'.format("----", "-----", "-----", "------", "---", "-------", "--------"))
             yes_no = lambda x: 'Yes' if x == True else 'No'
@@ -255,17 +307,17 @@ class Translation:
         line_counter = 0
         current_hit = 0
         number_of_hits = 0
-        line_by_line = output.split('\n')
-        for line in line_by_line:
+        lines = output.split('\n')
+        for line in lines:
             reformed_line = re.sub(' +', ' ', line).strip().split(' ')
             # Finding the number of hits
             if reformed_line[0] == 'Scores' and reformed_line[1] == 'for' and reformed_line[2] == 'complete' and reformed_line[3] == 'sequences':
                 read = line_counter + 4
-                if len(re.sub(' +', ' ', line_by_line[read]).strip().split(' ')) < 9:
+                if len(re.sub(' +', ' ', lines[read]).strip().split(' ')) < 9:
                     return "No hit found!", "No hit found!"
-                while re.sub(' +', ' ', line_by_line[read]).strip().split(' ')[0] != "Domain":
-                    if len(re.sub(' +', ' ', line_by_line[read]).strip().split(' ')) >= 9:
-                        number_of_hits += int(re.sub(' +', ' ', line_by_line[read]).strip().split(' ')[7])
+                while re.sub(' +', ' ', lines[read]).strip().split(' ')[0] != "Domain":
+                    if len(re.sub(' +', ' ', lines[read]).strip().split(' ')) >= 9:
+                        number_of_hits += int(re.sub(' +', ' ', lines[read]).strip().split(' ')[7])
                     read += 1
                 self.hmms_coordinates = list(range(0, number_of_hits))
                 self.hits_coordinates = list(range(0, number_of_hits))
@@ -273,9 +325,9 @@ class Translation:
             if reformed_line[0] == '>>':
                 read = line_counter + 3
                 # Reading the start and the end index of each hit
-                while len(re.sub(' +', ' ', line_by_line[read]).strip().split(' ')) == 16:
-                    self.hmms_coordinates[current_hit] = list(map(int, re.sub(' +', ' ', line_by_line[read]).strip().split(' ')[6:8]))
-                    self.hits_coordinates[current_hit] = list(map(int, re.sub(' +', ' ', line_by_line[read]).strip().split(' ')[9:11]))
+                while len(re.sub(' +', ' ', lines[read]).strip().split(' ')) == 16:
+                    self.hmms_coordinates[current_hit] = list(map(int, re.sub(' +', ' ', lines[read]).strip().split(' ')[6:8]))
+                    self.hits_coordinates[current_hit] = list(map(int, re.sub(' +', ' ', lines[read]).strip().split(' ')[9:11]))
                     read += 1
                     current_hit += 1
             line_counter += 1
@@ -289,29 +341,23 @@ class Translation:
         print("Reading the dna file ...")
         dna_sequence_file = open(dna_seq, 'r')
 
-        # Reading DNA sequence line by line as one line
-        self.dna = dna_sequence_file.read().split('\n')
-        title = self.dna[0]
-        self.dna = self.dna[1:]
-        new_dna = ""
-        for line in self.dna:
-            new_dna += line
+        Translated_Search.dna = Translated_Search.fasta_to_string(dna_sequence_file.read())
 
         # Creating the translated_dna_file with 6 different sequences (ORFs) with 6 different recognizable titles
         print("\nForward ORFs:")
         print("-------------")
         translated_dna = ""
-        reverse = 1
         for frame_number in range(3):
-            translated_frame = self.translator(new_dna[frame_number::reverse], frame_number)
-            translated_dna = translated_dna + ('>' + str(frame_number) + '_' + title.replace('>', '') + '\n'+ self.fasta_format(translated_frame) + '\n')
-        # The reverse 3 ORFs is not yet needed.
+            print("Translating frame number ", frame_number, " ...")
+            translated_frame = Translated_Search.translator(Translated_Search.dna[1], frame_number)
+            translated_dna = translated_dna + Translated_Search.string_to_fasta(translated_frame, title = ('_' + str(frame_number) + Translated_Search.dna[0]))
+
         print("\nReverse ORFs:")
         print("-------------")
-        reverse = -1
         for frame_number in range(3):
-            translated_frame = self.translator(new_dna[reverse*(frame_number+1)::reverse], frame_number)
-            translated_dna = translated_dna + ('>' + str(frame_number) + '_' + title.replace('>', '') + '\n'+ self.fasta_format(translated_frame) + '\n')
+            print("Translating frame number ", frame_number, " ...")
+            translated_frame = Translated_Search.translator(Translated_Search.complementor(Translated_Search.dna[1]), frame_number, True)
+            translated_dna = translated_dna + Translated_Search.string_to_fasta(translated_frame, title = ('_r' + str(frame_number) + Translated_Search.dna[0]))
 
         # Writing the translated_dna_file to a file for HMMER use
         translated_frames_file = open("translated_frames.fa", 'w+')
@@ -319,7 +365,7 @@ class Translation:
         seq_path = os.path.abspath("translated_frames.fa")
         translated_frames_file.seek(0, 0)
 
-        # "--nobias", "--incE", "10", "--incdomE", "10", "--F3", "10", "--nonull2"
+        # "--nobias", "--incE", "10", "--incdomE", "10", "--F3", "1", "--nonull2", "--max"
         print("\nRunning HMMER ...")
         process = subprocess.run(["hmmsearch", "--F3", "1", hmm_profile, seq_path], \
             stdout=subprocess.PIPE, universal_newlines=True)
@@ -334,23 +380,15 @@ class Translation:
         ex = self.mf_exon_reader(annotated, gene, format)
 
 
-t = Translation()
+t = Translated_Search()
 if sys.argv[1] == '-h':
     print("python3 Translation.py dna_seq = "", hmm_profile = "", annotated = "", gene = "", format = """)
 else:
     my_output = t.run(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
+
+
 # if hmms_coordinates != "No hit found!":
 #     my_out = t.naive(list(map(tuple, hmms_coordinates)), set(), len(hmms_coordinates))
 #     print("Highest score is: ", my_out[0], ", and the best set is: ", my_out[1])
 # else:
 #     print(hmms_coordinates)
-# "/Users/ahaji060/Programming/hmmer-3.2.1/tutorial/globins45.fa"
-
-# from Translation import Translation
-# t = Translation()
-# out = t.run(dna_seq = "", hmm_profile = "", annotated = "", gene = "")
-# "" "" "" ""
-
-# hs = t.hmmsearch("/Users/ahaji060/Documents/Thesis/forMarcel/Full/cox1_protein_profile.hmm", "/Users/ahaji060/Documents/Thesis/forMarcel/83introns_annot_Endoconidiophora_resinifera_strain_1410B.fasta-stripped")
-# ex = t.mf_exon_reader("/Users/ahaji060/Documents/Thesis/forMarcel/83introns_annot_Endoconidiophora_resinifera_strain_1410B.fasta", "cox1", 'f')
-# exit()
