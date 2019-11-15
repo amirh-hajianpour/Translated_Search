@@ -62,6 +62,23 @@ class Translated_Search:
         print()
 
     @staticmethod
+    # Detects whether a sequence is DNA, RNA, Protein, or invalid
+    def sequence_type(sequence):
+        sequence = sequence.upper()
+        flag = True
+        letters =  set()
+        for letter in sequence:
+            letters.add(letter)
+
+        if letters.issubset({'A', 'T', 'C', 'G'}):
+            return 'DNA'
+        elif letters.issubset({'A', 'U', 'C', 'G'}):
+            return 'RNA'
+        elif letters.issubset({'A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y'}):
+            return 'Protein'
+        return -1
+
+    @staticmethod
     # Makes a complementary DNA strand
     def complementor(dna):
         dna = dna.upper()
@@ -348,16 +365,16 @@ class Translated_Search:
         print("-------------")
         translated_dna = ""
         for frame_number in range(3):
-            print("Translating frame number ", frame_number, " ...")
+            print("Translating frame number ", str(frame_number + 1), " ...")
             translated_frame = Translated_Search.translator(Translated_Search.dna[1], frame_number)
-            translated_dna = translated_dna + Translated_Search.string_to_fasta(translated_frame, title = ('_' + str(frame_number) + Translated_Search.dna[0]))
+            translated_dna = translated_dna + Translated_Search.string_to_fasta(translated_frame, title = (str(frame_number+1) + '_orf_' + Translated_Search.dna[0]))
 
         print("\nReverse ORFs:")
         print("-------------")
         for frame_number in range(3):
-            print("Translating frame number ", frame_number, " ...")
+            print("Translating frame number ", str(frame_number + 1), " ...")
             translated_frame = Translated_Search.translator(Translated_Search.complementor(Translated_Search.dna[1]), frame_number, True)
-            translated_dna = translated_dna + Translated_Search.string_to_fasta(translated_frame, title = ('_r' + str(frame_number) + Translated_Search.dna[0]))
+            translated_dna = translated_dna + Translated_Search.string_to_fasta(translated_frame, title = ('r' + str(frame_number+1) + '_orf_' + Translated_Search.dna[0]))
 
         # Writing the translated_dna_file to a file for HMMER use
         translated_frames_file = open("translated_frames.fa", 'w+')
