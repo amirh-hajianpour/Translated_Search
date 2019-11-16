@@ -164,53 +164,42 @@ class Translated_Search:
 
         return title, sequence
 
+    @staticmethod
     # Computes a score for a set of hits considering:
     # overlap as penalty, and match as positive score
-    def scoring_function(self, current):
+    def scoring_function(current):
         current = list(map(list, current))
         overlap = 0
         if len(current) == 1:
             return current[0][1] - current[0][0]
 
-        for i in range(0, len(current)):
+        for i in range(len(current)):
             for j in range(i + 1, len(current)):
-                if current[i][1] <= current[j][0] or current[i][0] >= current[j][1]:
-                    if current[i][1] <= current[j][0]:
-                        overlap += current[j][0] - current[i][1] + 1
-                    else:
-                        overlap += current[i][0] - current[j][1] + 1
-                elif current[i][0] <= current[j][0] and current[i][1] <= current[j][1]:
-                    overlap += current[i][1] - current[j][0] + 1
-                elif current[i][0] >= current[j][0] and current[i][1] <= current[j][1]:
-                    overlap += current[i][1] - current[i][0]
-                elif current[i][0] >= current[j][0] and current[i][1] >= current[j][1]:
-                    overlap += current[j][1] - current[i][0] + 1
-                elif current[i][0] <= current[j][0] and current[i][1] >= current[j][1]:
-                    overlap += current[j][1] - current[j][0]
-                else:
-                    print("UNKNOWN EXCEPTION!")
+                if max(current[i][0], current[j][0]) < min(current[i][1], current[j][1]):
+                    overlap += min(current[i][1], current[j][1]) - max(current[i][0], current[j][0]) + 1
 
         coverage = 0
-        for i in range(0, len(current)):
-            coverage += current[i][1] - current[i][0]
+        for i in range(len(current)):
+            coverage += current[i][1] - current[i][0] + 1
 
         return coverage - (2*overlap)
 
+    @staticmethod
     # Creates a binary tree in which a hit is selected or not: 2^hits
-    def naive(self, hits, current, n):
+    def naive(hits, current, n):
         # Base Case
         if n == 0:
-            return self.scoring_function(current), current
+            return Translated_Search.scoring_function(current), current
 
         # return the maximum of two cases:
         # (1) n-1 th item not included
         # (2) n-1 th item included
         old_current = current.copy()
         current.add(hits[n - 1])
-        left_score, left_set = self.naive(hits, current, n - 1)
-        right_score, right_set = self.naive(hits, old_current, n - 1)
+        left_score, left_set = Translated_Search.naive(hits, current, n - 1)
+        right_score, right_set = Translated_Search.naive(hits, old_current, n - 1)
 
-        if left_score > right_score:
+        if left_score >= right_score:
             return left_score, left_set
         else:
             return right_score, right_set
@@ -306,7 +295,7 @@ class Translated_Search:
                     , self.is_hit(exon_starts[i], exon_ends[i])[1], self.is_hit(exon_starts[i], exon_ends[i])[1] / (exon_ends[i] - exon_starts[i] + 1)))
             print("\nOverall annotation statistics summary:")
             print("--------------------------------------")
-            print('{0:<40} {1:>3} {2:<13}'.format("Total spliced RNA size:", exon_length, "nucleotides"))
+            print('{0:<40} {1:>3} {2:<13}'.format("Total exon size:", exon_length, "nucleotides"))
             print('{0:<40} {1:>3} {2:<13}'.format("Total overlap length:", overlap_length, "nucleotides"))
             print('{0:<40} {1:>4} {2:}'.format("Number of found exons (TPR):", number_of_hits, str("out of " + str(exon_number + 1) + ' = ' + format(number_of_hits/(exon_number + 1),'.2f'))))
             print('{0:<40} {1:>3}'.format("Overall score:", format(overlap_length/exon_length, '.2f')))
@@ -319,38 +308,40 @@ class Translated_Search:
         print()
         return exon_starts, exon_ends
 
+    @staticmethod
     # Reads HMMER output and extracts necessary information
-    def hmmer_reader(self, output):
+    def hmmer_reader(hmmer_output):
         line_counter = 0
         current_hit = 0
-        number_of_hits = 0
-        lines = output.split('\n')
+        lines = hmmer_output.split('\n')
         for line in lines:
-            reformed_line = re.sub(' +', ' ', line).strip().split(' ')
+            current_line = re.sub(' +', ' ', line).strip().split(' ')
             # Finding the number of hits
-            if reformed_line[0] == 'Scores' and reformed_line[1] == 'for' and reformed_line[2] == 'complete' and reformed_line[3] == 'sequences':
+            if current_line[0] == 'Scores' and current_line[1] == 'for' and current_line[2] == 'complete' and current_line[3] == 'sequences':
                 read = line_counter + 4
-                if len(re.sub(' +', ' ', lines[read]).strip().split(' ')) < 9:
+                if len(re.sub(' +', ' ', lines[read]).strip().split(' ')) == 0:
                     return "No hit found!", "No hit found!"
-                while re.sub(' +', ' ', lines[read]).strip().split(' ')[0] != "Domain":
+                number_of_hits = 0
+                while len(re.sub(' +', ' ', lines[read]).strip()) != 0:
                     if len(re.sub(' +', ' ', lines[read]).strip().split(' ')) >= 9:
                         number_of_hits += int(re.sub(' +', ' ', lines[read]).strip().split(' ')[7])
                     read += 1
-                self.hmms_coordinates = list(range(0, number_of_hits))
-                self.hits_coordinates = list(range(0, number_of_hits))
+                Translated_Search.hmms_coordinates = list(range(number_of_hits))
+                Translated_Search.hits_coordinates = list(range(number_of_hits))
             # Finding hits in each sequence
-            if reformed_line[0] == '>>':
+            if current_line[0] == '>>':
                 read = line_counter + 3
                 # Reading the start and the end index of each hit
                 while len(re.sub(' +', ' ', lines[read]).strip().split(' ')) == 16:
-                    self.hmms_coordinates[current_hit] = list(map(int, re.sub(' +', ' ', lines[read]).strip().split(' ')[6:8]))
-                    self.hits_coordinates[current_hit] = list(map(int, re.sub(' +', ' ', lines[read]).strip().split(' ')[9:11]))
+                    Translated_Search.hmms_coordinates[current_hit] = list(map(int, re.sub(' +', ' ', lines[read]).strip().split(' ')[6:8]))
+                    Translated_Search.hits_coordinates[current_hit] = list(map(int, re.sub(' +', ' ', lines[read]).strip().split(' ')[9:11]))
                     read += 1
                     current_hit += 1
             line_counter += 1
-        return self.hmms_coordinates, self.hits_coordinates
+        return Translated_Search.hmms_coordinates, Translated_Search.hits_coordinates
 
-    def hmmsearch(self, hmm_profile, dna_seq):
+    @staticmethod
+    def hmmsearch(hmm_profile, dna_seq):
         # Reading HMM protein profile and the DNA sequence as arguments
         print("Reading the hmm file ...")
         protein_profile_file = open(hmm_profile, 'r')
@@ -390,22 +381,42 @@ class Translated_Search:
         output_file = open("hmm_output.txt", 'w+')
         output_file.write(output)
         print(output)
-        return self.hmmer_reader(output)
+        return Translated_Search.hmmer_reader(output)
 
     def run(self, dna_seq, hmm_profile, annotated, gene, format):
-        hs = self.hmmsearch(hmm_profile, dna_seq)
+        hmms, hits = Translated_Search.hmmsearch(hmm_profile, dna_seq)
         ex = self.mf_exon_reader(annotated, gene, format)
+        return hmms, hits
 
 
 t = Translated_Search()
 if sys.argv[1] == '-h':
     print("python3 Translation.py dna_seq = "", hmm_profile = "", annotated = "", gene = "", format = """)
 else:
-    my_output = t.run(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
+    hmms, hits = t.run(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
 
 
-# if hmms_coordinates != "No hit found!":
-#     my_out = t.naive(list(map(tuple, hmms_coordinates)), set(), len(hmms_coordinates))
-#     print("Highest score is: ", my_out[0], ", and the best set is: ", my_out[1])
-# else:
-#     print(hmms_coordinates)
+if hmms != "No hit found!":
+    print("All HMMER hits (sorted): ", len(hmms))
+    hmmer_hits = sorted(list(map(tuple, hmms)), key=lambda tup: tup[0])
+    print(hmmer_hits)
+    my_out = Translated_Search.naive(list(map(tuple, hmms)), set(), len(hmms))
+else:
+    print(hmms)
+
+optimal_hits = sorted(list(map(tuple, my_out[1])), key=lambda tup: tup[0])
+window_width = os.get_terminal_size()[0]
+
+print()
+print("Highest score is: ", my_out[0])
+print("Number of included hits: ", len(optimal_hits))
+print("The best set of hits is: ")
+print(optimal_hits)
+print('\n')
+text = "Hits positioning visualization:"
+print(text)
+print('-'*len(text))
+for i in range(len(my_out[1])):
+    print(' '*((optimal_hits[i][0]-1)%window_width), optimal_hits[i][0], \
+        '-'*(optimal_hits[i][1] - optimal_hits[i][0] - len(str(optimal_hits[i][1])) - len(str(optimal_hits[i][0])) + 1), optimal_hits[i][1], sep='')
+print('\n')
