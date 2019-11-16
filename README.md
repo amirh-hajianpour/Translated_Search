@@ -1,4 +1,4 @@
-# Translated Search
+# Translated Search v0.9
 
 Genome annotation using translated DNA and HMMER. Given a FASTA DNA file and a Hidden Markov Model (HMM) Protein Profile file, this application locates the protein in the given DNA.
 
